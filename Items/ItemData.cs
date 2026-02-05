@@ -80,16 +80,17 @@ namespace RepoAP
             ids.Add(base_shop_offset++);
             names.Add(ItemNames.upgrade_death_head_battery);
 
-            // ---- SHOP UNLOCKS ----
-            /*ids.Add(base_shop_offset++);      // these aren't implemented yet but will eventually be filler
+            // ---- MISC FILLER ----
+            ids.Add(base_shop_offset++);
  			names.Add(ItemNames.small_health);
 
-            ids.Add(base_shop_offset++);
+            /*ids.Add(base_shop_offset++);      // these aren't implemented yet but may eventually be filler
  			names.Add(ItemNames.medium_health);
 
             ids.Add(base_shop_offset++);
  			names.Add(ItemNames.large_health);*/
 
+            // ---- SHOP UNLOCKS ----
             ids.Add(base_shop_offset++);
  			names.Add(ItemNames.progressive_health);
 
@@ -236,6 +237,19 @@ namespace RepoAP
                     StatsManager.instance.ItemPurchase(itemName);
                 else
                     Plugin.Logger.LogDebug("Item " + itemName + " has already been received. Skipping...");
+            }
+            else if (itemName.Contains("Health"))
+            {
+                if (!StatsManager.instance.runStats.TryGetValue("healthPacksReceivedFromAP", out int healthPacksReceived))
+                {
+                    PunManager.instance.SetRunStatSet("healthPacksReceivedFromAP", 0);
+                    healthPacksReceived = 0;
+                }
+                if (APSave.GetItemsReceived()[itemId] > healthPacksReceived)
+                {
+                    StatsManager.instance.ItemPurchase(itemName);
+                    PunManager.instance.SetRunStatSet("healthPacksReceivedFromAP", healthPacksReceived + 1);
+                }
             }
 
 
