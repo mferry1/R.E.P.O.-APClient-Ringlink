@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using UnityEngine;
 
 namespace RepoAP.Core
 {
@@ -57,6 +58,8 @@ namespace RepoAP.Core
         {
             const string nickAP = "<b><color=#c97682>AR</color><color=#75c275>CH</color><color=#ca94c2>IP</color><color=#d9a07d>EL</color><color=#767ebd>AG</color><color=#eee391>O:</color></b>";
 
+            private static float timeSinceLastMessage = 0;
+
             // define static queue of incoming messages (string,string)
             private struct messageData
             {
@@ -73,18 +76,20 @@ namespace RepoAP.Core
 
             static void Prefix(TruckScreenText __instance)
             {
+                timeSinceLastMessage += Time.deltaTime;
                 if (Plugin.connection != null)
                 {
                     var currentLineIndex = (int)AccessTools.Field(typeof(TruckScreenText), "currentLineIndex").GetValue(__instance);
                     var currentPageIndex = (int)AccessTools.Field(typeof(TruckScreenText), "currentPageIndex").GetValue(__instance);
 
-                    if (currentLineIndex >= __instance.pages[currentPageIndex].textLines.Count)
+                    if (currentLineIndex >= __instance.pages[currentPageIndex].textLines.Count && timeSinceLastMessage >= (Plugin.BoundConfig.TruckScreenChatMessageFrequency.Value / 1000.0f))
                     {
                         if(messageQueue.TryDequeue(out var nextMessage))
                         {
                             OverridePlayerNameCheckPatch.SetFormattedNickname(nextMessage.nickname);
                             __instance.MessageSendCustom(String.Empty, nextMessage.message, 0);
                             OverridePlayerNameCheckPatch.ResetNickname();
+                            timeSinceLastMessage = 0f;
                         }
                     }
                 }
