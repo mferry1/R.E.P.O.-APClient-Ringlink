@@ -12,7 +12,8 @@ namespace RepoAP
         public ConfigEntry<bool> DisplayAPMessagesOnTruckScreen;
         public ConfigEntry<int> EnemyWeightIncrease;
         public ConfigEntry<int> ValuableSubstitutionChance;
-        //public ConfigEntry<bool> DeathLink;   // for the future
+        public ConfigEntry<bool> Deathlink;
+        public ConfigEntry<bool> OverrideMWDeathlink;
         public ConfigEntry<int> TruckScreenChatMessageFrequency;
         public PluginConfig(ConfigFile cfg)
         {
@@ -26,6 +27,10 @@ namespace RepoAP
             ValuableSubstitutionChance = cfg.Bind("Bad Luck Protection", "Chance to replace previously extracted valuables", 40,
                 "The chance to replace previously extracted valuables with undiscovered ones in the same size group, if possible. 0 means no valuables will be replaced, " +
                 "50 means roughly half of all valuables will be replaced, 100 means all valuables will be replaced when possible. Minimum value is 0, maximum is 100.");
+            Deathlink = cfg.Bind("General", "Enable death link", false,
+                "When you die, everyone who enabled death link dies. Of course, the reverse is true too.");
+            OverrideMWDeathlink = cfg.Bind("General", "Override yaml death link option", false,
+                "If true, the mod config will be used to turn death link on/off instead of the yaml option.");
 
             ClearUnusedEntries(cfg);
         }
