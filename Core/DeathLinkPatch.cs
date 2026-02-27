@@ -114,7 +114,8 @@ namespace RepoAP.Core
             else
             {
                 Plugin.Logger.LogDebug("Running singleplayer deathlink");
-                RunManager.instance.ChangeLevel(false, false, _changeLevelType: RunManager.ChangeLevelType.RunLevel);
+                if (__instance.levelCurrent == __instance.levelShop) RunManager.instance.ChangeLevel(false, false, _changeLevelType: RunManager.ChangeLevelType.Shop);
+                else RunManager.instance.ChangeLevel(false, false, _changeLevelType: RunManager.ChangeLevelType.RunLevel);
                 awaitingDeathLink = false;
                 DeathLinkFinished("it doesn't matter what goes here because playersWithActiveDeathCountdown isn't checked in singleplayer");
             }
