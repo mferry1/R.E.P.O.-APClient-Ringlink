@@ -542,17 +542,17 @@ namespace RepoAP
             {
                 totalCount = LocationNames.all_monster_souls.Count;
                 collectedCount = 0;
-                Plugin.Logger.LogInfo("Monster Hunt");
+                Plugin.Logger.LogDebug("Monster Hunt");
                 foreach(var soul in LocationNames.all_monster_souls)
                 {
                     if (!saveData.monsterSoulsGathered.Contains(soul))
                     {
-                        Plugin.Logger.LogInfo($"{soul} has not been extracted");
+                        Plugin.Logger.LogDebug($"{soul} has not been extracted");
                         goalMet = false;
                     }
                     else
                     {
-                        Plugin.Logger.LogInfo($"{soul} hunted");
+                        Plugin.Logger.LogDebug($"{soul} hunted");
                         collectedCount++;
                     }
                 }
@@ -565,17 +565,17 @@ namespace RepoAP
             {
                 totalCount = LocationNames.all_valuables.Count;
                 collectedCount = 0;
-                Plugin.Logger.LogInfo("Valuable Hunt");
+                Plugin.Logger.LogDebug("Valuable Hunt");
                 foreach (var valuable in LocationNames.all_valuables)
                 {
                     if (!saveData.valuablesGathered.Contains(valuable))
                     {
-                        Plugin.Logger.LogInfo($"{valuable} has not been extracted");
+                        Plugin.Logger.LogDebug($"{valuable} has not been extracted");
                         goalMet = false;
                     }
                     else
                     {
-                        Debug.Log($"{valuable} extracted");
+                        Plugin.Logger.LogDebug($"{valuable} extracted");
                         collectedCount++;
                     }
                 }
