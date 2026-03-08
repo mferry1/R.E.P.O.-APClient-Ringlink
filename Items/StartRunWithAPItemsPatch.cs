@@ -31,23 +31,39 @@ namespace RepoAP.Items
         }
     }
 
-    [HarmonyPatch(typeof(StatsManager), "SaveFileCreate")]
+    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.SaveFileCreate))]
     class CreateRunWithAPItemsPatch
     {
         [HarmonyPostfix]
         static void RunStartStatsPatch()
         {
+            Plugin.Logger.LogDebug("Granting ap items from StatsManager.SaveFileCreate");
             StartRunWithAPItems.GrantAPItems();
         }
     }
 
-    [HarmonyPatch(typeof(StatsManager), "LoadGame")]    // it turns out that RunStartStats runs before the save data loads, which is why we couldn't track which items we already had
+    [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.LoadGame))]    // it turns out that RunStartStats runs before the save data loads, which is why we couldn't track which items we already had
     class LoadRunWithAPItemsPatch
     {
         [HarmonyPostfix]
         static void RunStartStatsPatch()
         {
+            Plugin.Logger.LogDebug("Granting ap items from StatsManager.LoadGame");
             StartRunWithAPItems.GrantAPItems();
+        }
+    }
+
+    [HarmonyPatch(typeof(RunManager), nameof(RunManager.ResetProgress))]    // ResetProgress is the best candidate because when levelCurrent == levelArena, it only runs once before gameOver is true
+    class RestartRunWithAPItemsPatch
+    {
+        [HarmonyPostfix]
+        static void RunStartStatsPatch(RunManager __instance, bool ___gameOver)
+        {
+            if (!___gameOver && __instance.levelCurrent == __instance.levelArena)
+            {
+                Plugin.Logger.LogDebug("Granting ap items from RunManager.ResetProgress");
+                StartRunWithAPItems.GrantAPItems();
+            }
         }
     }
 }
