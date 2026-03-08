@@ -43,6 +43,7 @@ namespace RepoAP
 
         public Dictionary<string, object> slotData;
         public DeathLinkService deathLinkService;
+        public RingLinkService ringLinkService;
         public int ItemIndex = 0;
         private ConcurrentQueue<(ItemInfo NetworkItem, int index)> incomingItems;
         private ConcurrentQueue<SerializableItemInfo> outgoingItems;
