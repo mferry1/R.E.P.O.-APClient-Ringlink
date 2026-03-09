@@ -80,17 +80,16 @@ namespace RepoAP
             ids.Add(base_shop_offset++);
             names.Add(ItemNames.upgrade_death_head_battery);
 
-            // ---- MISC FILLER ----
-            ids.Add(base_shop_offset++);
+            // ---- SHOP UNLOCKS ----
+            /*ids.Add(base_shop_offset++);      // these aren't implemented yet but will eventually be filler
  			names.Add(ItemNames.small_health);
 
-            /*ids.Add(base_shop_offset++);      // these aren't implemented yet but may eventually be filler
+            ids.Add(base_shop_offset++);
  			names.Add(ItemNames.medium_health);
 
             ids.Add(base_shop_offset++);
  			names.Add(ItemNames.large_health);*/
 
-            // ---- SHOP UNLOCKS ----
             ids.Add(base_shop_offset++);
  			names.Add(ItemNames.progressive_health);
 
@@ -228,21 +227,17 @@ namespace RepoAP
                 APSave.AddStockReceived();
                 APSave.UpdateAvailableItems();
             }
-            else if (itemName.Contains("Upgrade") || itemName.Contains("Item Health Pack"))
+            else if (itemName.Contains("Upgrade"))
             {
-                if (!StatsManager.instance.runStats.TryGetValue($"{itemName} ReceivedFromAP", out int upgradesReceived))
-                {
-                    PunManager.instance.SetRunStatSet($"{itemName} ReceivedFromAP", 0);
-                    upgradesReceived = 0;
-                }
+                // To ensure we don't grant upgrades multiple times, we check how many AP upgrades the save file already knows about and compare it to how many we have now.
+                // itemsUpgradesPurchased only tracks non-AP upgrades, which lets the player keep them in addition to the AP ones.
+                int upgradesReceived = StatsManager.instance.itemsPurchasedTotal[itemName] - StatsManager.instance.itemsUpgradesPurchased[itemName];
                 if (APSave.GetItemsReceived()[itemId] > upgradesReceived)
-                {
                     StatsManager.instance.ItemPurchase(itemName);
-                    PunManager.instance.SetRunStatSet($"{itemName} ReceivedFromAP", upgradesReceived + 1);
-                }
                 else
                     Plugin.Logger.LogDebug("Item " + itemName + " has already been received. Skipping...");
             }
+
 
         }
 

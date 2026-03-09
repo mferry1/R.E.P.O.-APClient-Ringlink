@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
-using UnityEngine;
 
 namespace RepoAP.Core
 {
@@ -56,13 +55,7 @@ namespace RepoAP.Core
         [HarmonyPatch(typeof(TruckScreenText), "Update")]
         public class TruckScreenChatPatch
         {
-            const float CHAT_MESSAGE_FREQUENCY = 0.25f;
-            const float MAX_MESSAGE_QUEUE_SIZE = 200;
-            const float MESSAGE_BATCH_SIZE = 5;
-
             const string nickAP = "<b><color=#c97682>AR</color><color=#75c275>CH</color><color=#ca94c2>IP</color><color=#d9a07d>EL</color><color=#767ebd>AG</color><color=#eee391>O:</color></b>";
-
-            private static float lastProcessTime = 0f;
 
             // define static queue of incoming messages (string,string)
             private struct messageData
@@ -80,23 +73,19 @@ namespace RepoAP.Core
 
             static void Prefix(TruckScreenText __instance)
             {
-                float currentTime = Time.unscaledTime;
                 if (Plugin.connection != null)
                 {
                     var currentLineIndex = (int)AccessTools.Field(typeof(TruckScreenText), "currentLineIndex").GetValue(__instance);
                     var currentPageIndex = (int)AccessTools.Field(typeof(TruckScreenText), "currentPageIndex").GetValue(__instance);
 
-                    if (currentLineIndex >= __instance.pages[currentPageIndex].textLines.Count && currentTime - lastProcessTime >= CHAT_MESSAGE_FREQUENCY)
+                    if (currentLineIndex >= __instance.pages[currentPageIndex].textLines.Count)
                     {
-                        int processedMessages = 0;
-                        while (processedMessages < MESSAGE_BATCH_SIZE && messageQueue.TryDequeue(out var nextMessage))
+                        if(messageQueue.TryDequeue(out var nextMessage))
                         {
                             OverridePlayerNameCheckPatch.SetFormattedNickname(nextMessage.nickname);
                             __instance.MessageSendCustom(String.Empty, nextMessage.message, 0);
                             OverridePlayerNameCheckPatch.ResetNickname();
-                            processedMessages++;
                         }
-                        lastProcessTime = currentTime;
                     }
                 }
             }
@@ -108,8 +97,7 @@ namespace RepoAP.Core
                 else nick = $"\n\n{preformattedNickname}\n";
 
                 messageData md = new messageData(nick, message);
-                if ((!string.IsNullOrEmpty(Plugin.apSlot) && message.Contains(Plugin.apSlot)) || messageQueue.Count < MAX_MESSAGE_QUEUE_SIZE) // we may instead want to drop older messages if the queue is full
-                    messageQueue.Enqueue(md);
+                messageQueue.Enqueue(md);
             }
 
             static public void AddMessage(string nickname, string hexColor, string message)

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
@@ -11,9 +6,21 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using MenuLib.MonoBehaviors;
+using Mono.Cecil.Cil;
 using RepoAP.Core;
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UIElements;
+using MenuLib;
+using MenuLib.MonoBehaviors;
 
 namespace RepoAP
 {
@@ -126,13 +133,22 @@ namespace RepoAP
 
                 deathLinkService = session.CreateDeathLinkService();
 
-                deathLinkService.OnDeathLinkReceived += HandleIncomingDeathlink;
+                /* deathLinkService.OnDeathLinkReceived += (deathLinkObject) =>
+                 {
+                     if (SceneManager.GetActiveScene().name != "TitleScreen" && _player != null && !_player.dead && !DeathLinkPatch.isDeathLink )
+                     {
+                         //Debug.Log("Death link received");
+                         DeathLinkPatch.deathMsg = deathLinkObject.Cause == null ? $"{deathLinkObject.Source} died. Point and laugh." : $"{deathLinkObject.Cause}";
+                         DeathLinkPatch.isDeathLink = true;
+
+                     }
+                 };*/
 
 
-                if (DeathLinkEnabled())
+                /*if ((bool)Plugin.connection.slotData["death_link"])
                 {
                     deathLinkService.EnableDeathLink();
-                }
+                }*/
 
                 //SetupDataStorage();
 
@@ -407,11 +423,13 @@ namespace RepoAP
                 if (APSave.GetItemReceivedIndex() > pendingItem.index)
                 {
                     incomingItems.TryDequeue(out _);
+                    //TunicRandomizer.Tracker.SetCollectedItem(itemName, false);
                     Plugin.Logger.LogDebug("Skipping item " + itemName + " at index " + pendingItem.index + " as it has already been processed.");
                     yield return true;
                     continue;
                 }
 
+                //CrabFile.current.SetInt($"randomizer processed item index {pendingItem.index}", 1);
                 Plugin.Logger.LogInfo("ItemHandler " + networkItem.ItemId);
                 APSave.AddItemReceived(networkItem.ItemId);
 
@@ -517,25 +535,21 @@ namespace RepoAP
 
         public void SendDeathLink()
         {
-            if (connected && SemiFunc.IsMasterClientOrSingleplayer() && DeathLinkEnabled())
+            if (connected)
             {
-                deathLinkService.SendDeathLink(new DeathLink(session.Players.ActivePlayer.Name, "got scrapped by the Taxman."));
+                deathLinkService.SendDeathLink(new DeathLink(session.Players.ActivePlayer.Name));
             }
         }
 
-        public void HandleIncomingDeathlink(DeathLink deathLinkObject)
+        /*public void HandleDeathLink()
         {
-            if (SemiFunc.IsMasterClientOrSingleplayer() && !SemiFunc.MenuLevel() && !DeathLinkPatch.awaitingDeathLink)
+            if (!SemiFunc.MenuLevel() && !RunManager.AllPlayersDead && !DeathLinkPatch.isDeathLink)
             {
-                Plugin.Logger.LogInfo("Received death link");
-                DeathLinkPatch.playerWhoDied = deathLinkObject.Source;
-                DeathLinkPatch.awaitingDeathLink = true;
-            }
-        }
+                //Debug.Log("Death link received");
+                DeathLinkPatch.deathMsg = deathLinkObject.Cause == null ? $"{deathLinkObject.Source} died. Point and laugh." : $"{deathLinkObject.Cause}";
+                DeathLinkPatch.isDeadFromDeathLink = true;
 
-        internal bool DeathLinkEnabled()
-        {
-            return (Plugin.BoundConfig.OverrideMWDeathlink.Value && Plugin.BoundConfig.Deathlink.Value) || (!Plugin.BoundConfig.OverrideMWDeathlink.Value && (bool)Plugin.connection.slotData["death_link"]);
-        }
+            }
+        }*/
     }
 }

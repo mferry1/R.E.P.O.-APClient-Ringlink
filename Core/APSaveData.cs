@@ -521,38 +521,27 @@ namespace RepoAP
                 }
             }
 
-            if (RunManager.instance.levels.Contains(RunManager.instance.levelCurrent))
-            {
-                status += $"<br>{{?}} {RunManager.instance.levelCurrent.NarrativeName} Pellys:<br><indent=10%>";
-                foreach (var pelly in saveData.pellysRequired)
-                {
-                    status += saveData.pellysGathered.Any(x => x.Contains(pelly.ToString()) && x.Contains(RunManager.instance.levelCurrent.name)) ?
-                        $"{pelly.ToString().Replace(" Pelly", "")} {{check}} | " :
-                        $"{pelly.ToString().Replace(" Pelly", "")} {{X}} | ";
-                }
-                status += "</indent>";
-            }
-            else
-            {
-                status += $"<br>{{?}} Pellys - {collectedCount}/{totalCount}{(collectedCount == totalCount ? " {check}" : " {X}")}";
-            }
+
+
+
+            status += $"<br>{{?}} Pelly - {collectedCount}/{totalCount}{(collectedCount == totalCount ? " {check}" : " {X}")}";
 
             //Check if Monster Hunt is complete
             if (saveData.monsterHunt)
             {
                 totalCount = LocationNames.all_monster_souls.Count;
                 collectedCount = 0;
-                Plugin.Logger.LogDebug("Monster Hunt");
+                Plugin.Logger.LogInfo("Monster Hunt");
                 foreach(var soul in LocationNames.all_monster_souls)
                 {
                     if (!saveData.monsterSoulsGathered.Contains(soul))
                     {
-                        Plugin.Logger.LogDebug($"{soul} has not been extracted");
+                        Plugin.Logger.LogInfo($"{soul} has not been extracted");
                         goalMet = false;
                     }
                     else
                     {
-                        Plugin.Logger.LogDebug($"{soul} hunted");
+                        Plugin.Logger.LogInfo($"{soul} hunted");
                         collectedCount++;
                     }
                 }
@@ -565,17 +554,17 @@ namespace RepoAP
             {
                 totalCount = LocationNames.all_valuables.Count;
                 collectedCount = 0;
-                Plugin.Logger.LogDebug("Valuable Hunt");
+                Plugin.Logger.LogInfo("Valuable Hunt");
                 foreach (var valuable in LocationNames.all_valuables)
                 {
                     if (!saveData.valuablesGathered.Contains(valuable))
                     {
-                        Plugin.Logger.LogDebug($"{valuable} has not been extracted");
+                        Plugin.Logger.LogInfo($"{valuable} has not been extracted");
                         goalMet = false;
                     }
                     else
                     {
-                        Plugin.Logger.LogDebug($"{valuable} extracted");
+                        Debug.Log($"{valuable} extracted");
                         collectedCount++;
                     }
                 }

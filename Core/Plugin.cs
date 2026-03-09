@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using BepInEx;
-using BepInEx.Logging;
+﻿using BepInEx;
 using HarmonyLib;
-using Photon.Pun;
-using RepoAP.Core;
 using UnityEngine;
+using System.Collections.Generic;
+using Photon.Pun;
+using System.Threading.Tasks;
+using BepInEx.Logging;
 
 namespace RepoAP
 {
@@ -52,7 +51,6 @@ namespace RepoAP
             Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
             var harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
             harmony.PatchAll();
-            harmony.PatchAll(typeof(DeathLinkPatch));
             harmony.PatchAll(typeof(EnemyDespawnPatch));
         }
         private void Start()
