@@ -6,6 +6,7 @@ using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.MessageLog.Parts;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using MenuLib.MonoBehaviors;
 using Mono.Cecil.Cil;
 using RepoAP.Core;
 using System;
@@ -19,8 +20,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
-using MenuLib;
-using MenuLib.MonoBehaviors;
 
 namespace RepoAP
 {
@@ -43,7 +42,7 @@ namespace RepoAP
 
         public Dictionary<string, object> slotData;
         public DeathLinkService deathLinkService;
-        public RingLinkService ringLinkService;
+        public EnergyLinkService energyLinkService;
         public int ItemIndex = 0;
         private ConcurrentQueue<(ItemInfo NetworkItem, int index)> incomingItems;
         private ConcurrentQueue<SerializableItemInfo> outgoingItems;
@@ -153,11 +152,27 @@ namespace RepoAP
 
                 //SetupDataStorage();
 
-                session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-levelsCompleted"].Initialize(0);
+                energyLinkService = session.CreateEnergyLinkService();
+
+				energyLinkService.OnEnergyLinkReceived += (energyLinkObject) =>
+				{
+					// todo
+					Debug.Log("Recieved Energy Link");
+				};
+
+				if ((bool)Plugin.connection.slotData["energy_link"]) {
+					energyLinkService.EnableEnergyLink();
+				}
+				
+
+				session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-levelsCompleted"].Initialize(0);
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-pellysGathered"].Initialize(new List<string>());
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-valuablesGathered"].Initialize(new List<string>());
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-monsterSoulsGathered"].Initialize(new List<string>());
 
+                session.DataStorage[$"REPO-EnergyLink-currentCurency"].Initialize(0);
+
+                // todo function call is getting big, maybe shorten it
                 _ = Plugin.connection.SyncCompletionProgress(APSave.saveData.levelsCompleted, APSave.saveData.pellysGathered, APSave.saveData.valuablesGathered, APSave.saveData.monsterSoulsGathered);
             }
             else

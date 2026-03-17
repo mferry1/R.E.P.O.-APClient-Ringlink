@@ -17,27 +17,27 @@ using System.Threading.Tasks;
 
 namespace RepoAP.Core {
 
-	public class RingLink : IEquatable<RingLink> {
+	public class EnergyLink : IEquatable<EnergyLink> {
 		
 		public int DeltaCurreny { get; }
 		//
 		// Summary:
-		//     The Timestamp of the created RingLink object
+		//     The Timestamp of the created EnergyLink object
 		public DateTime Timestamp { get; internal set; }
 
 		//
 		// Summary:
-		//     The name of the player who sent the RingLink
+		//     The name of the player who sent the EnergyLink
 		public string Source { get; }
 
 		//
 		// Summary:
-		//     The full text to print for players receiving the RingLink. Can be null
+		//     The full text to print for players receiving the EnergyLink. Can be null
 		public string Cause { get; }
 
 		//
 		// Summary:
-		//     A RingLink object that gets sent and received via bounce packets.
+		//     A EnergyLink object that gets sent and received via bounce packets.
 		//
 		// Parameters:
 		//	 deltaValue:
@@ -45,24 +45,24 @@ namespace RepoAP.Core {
 		//	   each other out
 		//
 		//   sourcePlayer:
-		//     Name of the player sending the RingLink
+		//     Name of the player sending the EnergyLink
 		//
 		//   cause:
-		//     Optional reason for the RingLink. Since this is optional it should generally
+		//     Optional reason for the EnergyLink. Since this is optional it should generally
 		//     include a name as if this entire text is what will be displayed
-		public RingLink(int deltaCurrenty, string sourcePlayer, string cause = null) {
+		public EnergyLink(int deltaCurrenty, string sourcePlayer, string cause = null) {
 			DeltaCurreny = deltaCurrenty;
 			Timestamp = DateTime.UtcNow;
 			Source = sourcePlayer;
 			Cause = cause;
 		}
 
-		internal static bool TryParse(Dictionary<string, JToken> data, out RingLink ringLink) {
+		internal static bool TryParse(Dictionary<string, JToken> data, out EnergyLink EnergyLink) {
 			try {
 				if (!data.TryGetValue("deltaCurrency", out var deltaCurrVal) ||
 					!data.TryGetValue("time", out var timeVal) ||
 					!data.TryGetValue("source", out var sourceVal)) {
-					ringLink = null;
+					EnergyLink = null;
 					return false;
 				}
 
@@ -71,18 +71,18 @@ namespace RepoAP.Core {
 					cause = causeVal.ToString();
 				}
 
-				ringLink = new RingLink(deltaCurrVal.Value<int>(), sourceVal.ToString(), cause) {
+				EnergyLink = new EnergyLink(deltaCurrVal.Value<int>(), sourceVal.ToString(), cause) {
 					Timestamp = UnixTimeConverter.UnixTimeStampToDateTime(timeVal.ToObject<double>())
 				};
 				return true;
 			}
 			catch {
-				ringLink = null;
+				EnergyLink = null;
 				return false;
 			}
 		}
 
-		public bool Equals(RingLink other) {
+		public bool Equals(EnergyLink other) {
 			if ((object)other == null) {
 				return false;
 			}
@@ -112,115 +112,120 @@ namespace RepoAP.Core {
 				return false;
 			}
 
-			if (this == obj as RingLink) {
+			if (this == obj as EnergyLink) {
 				return true;
 			}
 
-			return Equals((RingLink)obj);
+			return Equals((EnergyLink)obj);
 		}
 
 		public override int GetHashCode() {
 			return (Timestamp.GetHashCode() * 397) ^ ((Source != null) ? Source.GetHashCode() : 0);
 		}
 
-		public static bool operator ==(RingLink lhs, RingLink rhs) {
+		public static bool operator ==(EnergyLink lhs, EnergyLink rhs) {
 			return lhs?.Equals(rhs) ?? ((object)rhs == null);
 		}
 
-		public static bool operator !=(RingLink lhs, RingLink rhs) {
+		public static bool operator !=(EnergyLink lhs, EnergyLink rhs) {
 			return !(lhs == rhs);
 		}
 	}
 
-	public class RingLinkService {
+	public class EnergyLinkService {
 		//
 		// Summary:
-		//     event for clients to hook into and decide what to do with the received RingLink
-		public delegate void RingLinkReceivedHandler(RingLink ringLink);
+		//     event for clients to hook into and decide what to do with the received EnergyLink
+		public delegate void EnergyLinkReceivedHandler(EnergyLink EnergyLink);
 
 		private readonly IArchipelagoSocketHelper socket;
 
 		private readonly IConnectionInfoProvider connectionInfoProvider;
 
-		private RingLink lastSendRingLink;
+		private EnergyLink lastSendEnergyLink;
 
 		//
 		// Summary:
 		//     whenever one is received from the server as a bounce packet.
-		public event RingLinkReceivedHandler OnRingLinkReceived;
+		public event EnergyLinkReceivedHandler OnEnergyLinkReceived;
 
-		internal RingLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider) {
+		internal EnergyLinkService(IArchipelagoSocketHelper socket, IConnectionInfoProvider connectionInfoProvider) {
 			this.socket = socket;
 			this.connectionInfoProvider = connectionInfoProvider;
 			socket.PacketReceived += OnPacketReceived;
 		}
 
 		private void OnPacketReceived(ArchipelagoPacketBase packet) {
-			if (packet is BouncedPacket bouncedPacket && bouncedPacket.Tags.Contains("RingLink") && RingLink.TryParse(bouncedPacket.Data, out var ringLink) && (!(lastSendRingLink != null) || !(lastSendRingLink == ringLink)) && this.OnRingLinkReceived != null) {
-				this.OnRingLinkReceived(ringLink);
+			if (packet is BouncedPacket bouncedPacket && bouncedPacket.Tags.Contains("EnergyLink") && 
+				EnergyLink.TryParse(bouncedPacket.Data, out var energyLink) && 
+				(!(lastSendEnergyLink != null) || !(lastSendEnergyLink == energyLink)) && 
+				this.OnEnergyLinkReceived != null) 
+			{
+				this.OnEnergyLinkReceived(energyLink);
 			}
 		}
 
 		//
 		// Summary:
-		//     Formats and sends a Bounce packet using the provided ringLink object.
+		//     Formats and sends a Bounce packet using the provided EnergyLink object.
 		//
 		// Parameters:
-		//   ringLink:
-		//     the information of the ringLink which occurred. Must at least contain the RingLink.Source.
+		//   EnergyLink:
+		//     the information of the EnergyLink which occurred. Must at least contain the EnergyLink.Source.
 		//
 		//
 		// Exceptions:
 		//   T:Archipelago.MultiClient.Net.Exceptions.ArchipelagoSocketClosedException:
 		//     The websocket connection is not alive
-		public void SendRingLink(RingLink ringLink) {
+		public void SendEnergyLink(EnergyLink EnergyLink) {
 			BouncePacket bouncePacket = new BouncePacket {
-				Tags = new List<string> { "RingLink" },
+				Tags = new List<string> { "EnergyLink" },
 				Data = new Dictionary<string, JToken>
 				{
 				{
 					"time",
-					ringLink.Timestamp.ToUnixTimeStamp()
+					EnergyLink.Timestamp.ToUnixTimeStamp()
 				},
-				{ "source", ringLink.Source }
+				{ "source", EnergyLink.Source }
 			}
 			};
-			if (ringLink.Cause != null) {
-				bouncePacket.Data.Add("cause", ringLink.Cause);
+			if (EnergyLink.Cause != null) {
+				bouncePacket.Data.Add("cause", EnergyLink.Cause);
 			}
 
-			lastSendRingLink = ringLink;
+			lastSendEnergyLink = EnergyLink;
 			socket.SendPacketAsync(bouncePacket);
 		}
 
 		//
 		// Summary:
-		//     Adds "RingLink" to your Archipelago.MultiClient.Net.ArchipelagoSession's tags
-		//     RingLinkService.OnRingLinkReceived
+		//     Adds "EnergyLink" to your Archipelago.MultiClient.Net.ArchipelagoSession's tags
+		//     EnergyLinkService.OnEnergyLinkReceived
 		//     events
-		public void EnableRingLink() {
-			if (Array.IndexOf(connectionInfoProvider.Tags, "RingLink") == -1) {
-				connectionInfoProvider.UpdateConnectionOptions(connectionInfoProvider.Tags.Concat(new string[1] { "RingLink" }).ToArray());
+		public void EnableEnergyLink() {
+			if (Array.IndexOf(connectionInfoProvider.Tags, "EnergyLink") == -1) {
+				connectionInfoProvider.UpdateConnectionOptions(connectionInfoProvider.Tags.Concat(new string[1] { "EnergyLink" }).ToArray());
 			}
 		}
 
 		//
 		// Summary:
-		//     Removes the "RingLink" tag from your Archipelago.MultiClient.Net.ArchipelagoSession
-		//     and opts out of further RingLinkService.OnRingLinkReceived
+		//     Removes the "EnergyLink" tag from your Archipelago.MultiClient.Net.ArchipelagoSession
+		//     and opts out of further EnergyLinkService.OnEnergyLinkReceived
 		//     events
-		public void DisableRingLink() {
-			if (Array.IndexOf(connectionInfoProvider.Tags, "RingLink") != -1) {
-				connectionInfoProvider.UpdateConnectionOptions(connectionInfoProvider.Tags.Where((string t) => t != "RingLink").ToArray());
+		public void DisableEnergyLink() {
+			if (Array.IndexOf(connectionInfoProvider.Tags, "EnergyLink") != -1) {
+				connectionInfoProvider.UpdateConnectionOptions(connectionInfoProvider.Tags.Where((string t) => t != "EnergyLink").ToArray());
 			}
 		}
 	}
-	public static class RingLinkProvider {
+
+	public static class EnergyLinkProvider {
 		// ReSharper disable once UnusedMember.Global
 		/// <summary>
-		///     creates and returns a <see cref="RingLinkService"/> for this <paramref name="session"/>.
+		///     creates and returns a <see cref="EnergyLinkService"/> for this <paramref name="session"/>.
 		/// </summary>
-		public static RingLinkService CreateRingLinkService(this ArchipelagoSession session) =>
-			new RingLinkService(session.Socket, session.ConnectionInfo);
+		public static EnergyLinkService CreateEnergyLinkService(this ArchipelagoSession session) =>
+			new EnergyLinkService(session.Socket, session.ConnectionInfo);
 	}
 }

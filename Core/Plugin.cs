@@ -8,7 +8,7 @@ using BepInEx.Logging;
 
 namespace RepoAP
 {
-    [BepInPlugin("Automagic.ArchipelagoREPO", "Archipelago Randomizer", "0.3.0")]
+    [BepInPlugin("Automagic.ArchipelagoREPO", "Archipelago Randomizer", "0.3.1")]
     [BepInDependency("nickklmao.menulib")]
     [BepInDependency("REPOLib")]
 

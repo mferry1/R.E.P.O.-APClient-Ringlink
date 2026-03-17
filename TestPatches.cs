@@ -1,14 +1,16 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using HarmonyLib;
 using UnityEngine;
+using static ModulePropSwitch;
+using static RepoAP.Plugin;
+using static RepoAP.Core.EnergyLink;
 
-namespace RepoAP
-{
+namespace RepoAP {
     /*[HarmonyPatch(typeof(ExtractionPoint), "HaulGoalSet")]
     class TestPatches
     {
@@ -41,142 +43,133 @@ namespace RepoAP
     }*/
 
     [HarmonyPatch(typeof(PlayerController), "Update")]
-    class DebugKeys
-    {
+    class DebugKeys {
         [HarmonyPrefix]
-        static void Prefix()
-        {
-            //MenuToggle
-            if (Debug.isDebugBuild)
-            {
-                if (Input.GetKeyDown(KeyCode.Insert))
+        static void Prefix() {
+            #if true
+                if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) 
                 {
-                    Plugin.showMenu = !Plugin.showMenu;
-                    Debug.Log("Toggle Menu");
+                    if (Input.GetKeyDown(KeyCode.F1)) {
+                        Debug.Log("Shift + F1 Pressed");
+                        Plugin.connection.energyLinkService.EnableEnergyLink();
+                    }
+                    else if (Input.GetKeyDown(KeyCode.F2)) {
+                        Debug.Log("Shift + F2 Pressed");
+                        Plugin.connection.energyLinkService.DisableEnergyLink();
+                    }
+                    else if (Input.GetKeyDown(KeyCode.F3)) {
+                        Debug.Log("Shift + F3 Pressed");
+                        RepoAP.Core.EnergyLink energyLink = new Core.EnergyLink(500, Plugin.apSlot, "Debug Test");
+                        Plugin.connection.energyLinkService.SendEnergyLink(energyLink);
+                    }
                 }
-
-                if (Input.GetKeyDown(KeyCode.F1))
+                else 
                 {
-                    Debug.Log("F1 Pressed");
-                    RunManager.instance.ChangeLevel(true, false, _changeLevelType: RunManager.ChangeLevelType.Shop);
-                }
-                if (Input.GetKeyDown(KeyCode.F2))
-                {
-                    Debug.Log("F2 Pressed");
-
-                    SemiFunc.StatSetRunCurrency(100000);
-                }
-                if (Input.GetKeyDown(KeyCode.F3))
-                {
-                    Debug.Log("F3 Pressed");
-                    foreach (var item in StatsManager.instance.itemDictionary.Keys)
-                    {
-                        Debug.Log($"{item}");
+                    if (Input.GetKeyDown(KeyCode.Insert)) {
+                        Plugin.showMenu = !Plugin.showMenu;
+                        Debug.Log("Toggle Menu");
                     }
 
-                }
-
-                if (Input.GetKeyDown(KeyCode.F4))
-                {
-                    Debug.Log("F4 Pressed");
-
-                    StatsManager.instance.itemsPurchased[ItemNames.upgrade_strength] = 15;
-                    //StatsManager.instance.
-                }
-
-                if (Input.GetKeyDown(KeyCode.F5))
-                {
-                    Debug.Log("Try Connect");
-                    Plugin.connection.TryConnect(Plugin.apAdress, Int32.Parse(Plugin.apPort), Plugin.apPassword, Plugin.apSlot);    // despite what the compiler is telling us, we don't want or need to
-                                                                                                                                    // await this call
-                }
-                if (Input.GetKeyDown(KeyCode.F6))
-                {
-                    string completionOutput = "-- Completetion Data --";
-                    completionOutput += $"\nLevel Quota: {APSave.saveData.levelQuota}";
-
-                    completionOutput += $"\nPellys Required: ";
-
-                    foreach (var pelly in APSave.saveData.pellysRequired)
-                    {
-                        completionOutput += ($"\n- {pelly.ToString()}");
+                    if (Input.GetKeyDown(KeyCode.F1)) {
+                        Debug.Log("F1 Pressed");
+                        RunManager.instance.ChangeLevel(true, false, _changeLevelType: RunManager.ChangeLevelType.Shop);
                     }
-                    completionOutput += ("\n\nPellys Gathered: ");
-                    foreach (string pelly in APSave.saveData.pellysGathered)
-                    {
-                        completionOutput += ($"\n- {pelly}");
+                    if (Input.GetKeyDown(KeyCode.F2)) {
+                        Debug.Log("F2 Pressed");
+
+                        SemiFunc.StatSetRunCurrency(100000);
                     }
-                    completionOutput += "\n\nValuables Gathered: ";
-                    foreach (string valuable in APSave.saveData.valuablesGathered)
-                    {
-                        completionOutput += $"\n- {valuable}";
+                    if (Input.GetKeyDown(KeyCode.F3)) {
+                        Debug.Log("F3 Pressed");
+                        foreach (var item in StatsManager.instance.itemDictionary.Keys) {
+                            Debug.Log($"{item}");
+                        }
+
                     }
-                    completionOutput += "\n\nValuables Missing: ";
-                    foreach (string valuable in LocationNames.all_valuables)
-                    {
-                        if (!APSave.saveData.valuablesGathered.Contains(valuable))
-                        {
-                            completionOutput += $"\n- Missing {valuable}";
+
+                    if (Input.GetKeyDown(KeyCode.F4)) {
+                        Debug.Log("F4 Pressed");
+
+                        StatsManager.instance.itemsPurchased[ItemNames.upgrade_strength] = 15;
+                        //StatsManager.instance.
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.F5)) {
+                        Debug.Log("Try Connect");
+                        Plugin.connection.TryConnect(Plugin.apAdress, Int32.Parse(Plugin.apPort), Plugin.apPassword, Plugin.apSlot);    // despite what the compiler is telling us, we don't want or need to
+                                                                                                                                        // await this call
+                    }
+                    if (Input.GetKeyDown(KeyCode.F6)) {
+                        string completionOutput = "-- Completetion Data --";
+                        completionOutput += $"\nLevel Quota: {APSave.saveData.levelQuota}";
+
+                        completionOutput += $"\nPellys Required: ";
+
+                        foreach (var pelly in APSave.saveData.pellysRequired) {
+                            completionOutput += ($"\n- {pelly.ToString()}");
+                        }
+                        completionOutput += ("\n\nPellys Gathered: ");
+                        foreach (string pelly in APSave.saveData.pellysGathered) {
+                            completionOutput += ($"\n- {pelly}");
+                        }
+                        completionOutput += "\n\nValuables Gathered: ";
+                        foreach (string valuable in APSave.saveData.valuablesGathered) {
+                            completionOutput += $"\n- {valuable}";
+                        }
+                        completionOutput += "\n\nValuables Missing: ";
+                        foreach (string valuable in LocationNames.all_valuables) {
+                            if (!APSave.saveData.valuablesGathered.Contains(valuable)) {
+                                completionOutput += $"\n- Missing {valuable}";
+                            }
+                        }
+                        completionOutput += "\n\nMonster Souls Missing: ";
+                        foreach (string soul in LocationNames.all_monster_souls) {
+                            if (!APSave.saveData.monsterSoulsGathered.Contains(soul)) {
+                                completionOutput += $"\n- Missing {soul}";
+                            }
+                        }
+                        completionOutput += "\n\nMonster Souls Gathered: ";
+                        foreach (string soul in APSave.saveData.monsterSoulsGathered) {
+                            completionOutput += $"\n- {soul}";
+                        }
+
+                        Debug.Log(completionOutput);
+                    }
+                    if (Input.GetKeyDown(KeyCode.F8)) {
+                        Debug.Log(RunManager.instance.levelCurrent.name);
+                    }
+                    if (Input.GetKeyDown(KeyCode.F9)) {
+                        Debug.Log(APSave.saveData.shopStockReceived);
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.F10)) {
+                        string output = "--- Valuable Weights ---";
+                        foreach (var levelValuables in LevelGenerator.Instance.Level.ValuablePresets) {
+                            var allValuables = levelValuables.tiny;
+                            allValuables.AddRange(levelValuables.small);
+                            allValuables.AddRange(levelValuables.medium);
+                            allValuables.AddRange(levelValuables.big);
+                            allValuables.AddRange(levelValuables.wide);
+                            allValuables.AddRange(levelValuables.tall);
+                            allValuables.AddRange(levelValuables.veryTall);
+
+
+                            foreach (var val in allValuables) {
+                                output += $"\n{val.PrefabName} - {LevelGenerator.Instance.Level.name}: {val.Prefab.GetComponent<ValuableObject>().physAttributePreset}".Replace("PhysAttribute", "").Replace("()", "");
+                            }
+                        }
+                        Debug.Log(output);
+                    }
+
+                    if (Input.GetKeyDown(KeyCode.F11)) {
+                        var items = APSave.GetItemsReceived();
+
+                        foreach (var item in items) {
+                            Debug.Log(ItemData.itemIDToName[ItemData.RemoveBaseId(item.Key)]);
                         }
                     }
-                    completionOutput += "\n\nMonster Souls Missing: ";
-                    foreach (string soul in LocationNames.all_monster_souls)
-                    {
-                        if (!APSave.saveData.monsterSoulsGathered.Contains(soul))
-                        {
-                            completionOutput += $"\n- Missing {soul}";
-                        }
-                    }
-                    completionOutput += "\n\nMonster Souls Gathered: ";
-                    foreach (string soul in APSave.saveData.monsterSoulsGathered)
-                    {
-                        completionOutput += $"\n- {soul}";
-                    }
-
-                    Debug.Log(completionOutput);
                 }
-                if (Input.GetKeyDown(KeyCode.F8))
-                {
-                    Debug.Log(RunManager.instance.levelCurrent.name);
-                }
-                if (Input.GetKeyDown(KeyCode.F9))
-                {
-                    Debug.Log(APSave.saveData.shopStockReceived);
-                }
-
-                if (Input.GetKeyDown(KeyCode.F10))
-                {
-                    string output = "--- Valuable Weights ---";
-                    foreach (var levelValuables in LevelGenerator.Instance.Level.ValuablePresets)
-                    {
-                        var allValuables = levelValuables.tiny;
-                        allValuables.AddRange(levelValuables.small);
-                        allValuables.AddRange(levelValuables.medium);
-                        allValuables.AddRange(levelValuables.big);
-                        allValuables.AddRange(levelValuables.wide);
-                        allValuables.AddRange(levelValuables.tall);
-                        allValuables.AddRange(levelValuables.veryTall);
-
-
-                        foreach (var val in allValuables)
-                        {
-                            output += $"\n{val.PrefabName} - {LevelGenerator.Instance.Level.name}: {val.Prefab.GetComponent<ValuableObject>().physAttributePreset}".Replace("PhysAttribute", "").Replace("()", "");
-                        }
-                    }
-                    Debug.Log(output);
-                }
-
-                if (Input.GetKeyDown(KeyCode.F11))
-                {
-                    var items = APSave.GetItemsReceived();
-
-                    foreach (var item in items)
-                    {
-                        Debug.Log(ItemData.itemIDToName[ItemData.RemoveBaseId(item.Key)]);
-                    }
-                }
-            }
+            #endif
         }
-    } 
-
+    }
 }
