@@ -152,25 +152,16 @@ namespace RepoAP
 
                 //SetupDataStorage();
 
-                energyLinkService = session.CreateEnergyLinkService();
-
-				energyLinkService.OnEnergyLinkReceived += (energyLinkObject) =>
-				{
-					// todo
-					Debug.Log("Recieved Energy Link");
-				};
-
-				if ((bool)Plugin.connection.slotData["energy_link"]) {
-					energyLinkService.EnableEnergyLink();
+                if ((bool)Plugin.connection.slotData["energy_link"]) {
+                    InitEnergyLink();
 				}
 				
-
 				session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-levelsCompleted"].Initialize(0);
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-pellysGathered"].Initialize(new List<string>());
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-valuablesGathered"].Initialize(new List<string>());
                 session.DataStorage[$"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-monsterSoulsGathered"].Initialize(new List<string>());
 
-                session.DataStorage[$"REPO-EnergyLink-currentCurency"].Initialize(0);
+                //session.DataStorage[$"REPO-EnergyLink-currentCurency"].Initialize(0);
 
                 // todo function call is getting big, maybe shorten it
                 _ = Plugin.connection.SyncCompletionProgress(APSave.saveData.levelsCompleted, APSave.saveData.pellysGathered, APSave.saveData.valuablesGathered, APSave.saveData.monsterSoulsGathered);
@@ -256,6 +247,8 @@ namespace RepoAP
                 ItemIndex = 0;
                 //Locations.CheckedLocations.Clear();
                 //ItemLookup.ItemList.Clear();
+
+                DeleteEnergyLink();
 
                 Plugin.Logger.LogInfo("Disconnected from Archipelago");
             }
@@ -515,12 +508,12 @@ namespace RepoAP
                 Task<List<string>> getPellysGathered = SyncAPClientServerData($"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-pellysGathered", pellys_gathered);
                 Task<List<string>> getValuablesGathered = SyncAPClientServerData($"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-valuablesGathered", valuables_gathered);
                 Task<List<string>> getMonsterSoulsGathered = SyncAPClientServerData($"REPO-{session.Players.GetPlayerName(session.ConnectionInfo.Slot)}-monsterSoulsGathered", monster_souls_gathered);
-                APSave.saveData.levelsCompleted = await getLevelsCompleted;
-                APSave.saveData.pellysGathered = await getPellysGathered;
-                APSave.saveData.valuablesGathered = await getValuablesGathered;
-                APSave.saveData.monsterSoulsGathered = await getMonsterSoulsGathered;
+				APSave.saveData.levelsCompleted = await getLevelsCompleted;
+				APSave.saveData.pellysGathered = await getPellysGathered;
+				APSave.saveData.valuablesGathered = await getValuablesGathered;
+				APSave.saveData.monsterSoulsGathered = await getMonsterSoulsGathered;
 
-                Plugin.Logger.LogInfo("Data storage sync complete");
+				Plugin.Logger.LogInfo("Data storage sync complete");
                 // shopStockReceived gets updated when connecting, so we don't need to store it on the server
                 // itemsReceived is filled when connecting if some received items are missing, so we don't need to store it on the server
                 // levelsUnlocked gets constructed from itemsReceived, so we don't need to store it on the server
@@ -567,5 +560,31 @@ namespace RepoAP
 
             }
         }*/
-    }
+
+        public void InitEnergyLink() 
+        {
+            if (energyLinkService == null) 
+            {
+                energyLinkService = session.CreateEnergyLinkService();
+                energyLinkService.EnableEnergyLink();
+            }
+            //Debug.Log("Called InitEnergyLink");
+		}
+
+        public void DeleteEnergyLink() 
+        {
+            if (energyLinkService != null) 
+            {
+                energyLinkService.DisableEnergyLink();
+                energyLinkService = null;
+            }
+			//Debug.Log("Called DeleteEnergyLink");
+		}
+
+        /*
+        public void SendEnergyLink(EnergyLink energyLink) {
+			energyLinkService.SendEnergyLink(socket, energyLink);
+		}
+        */
+	}
 }
